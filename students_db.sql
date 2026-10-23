@@ -14,3 +14,7 @@ CREATE TABLE students (
     degree VARCHAR(50),
     phone_number VARCHAR(30)
 );
+
+CREATE INDEX idx_students_name ON students(name);
+CREATE INDEX idx_students_last_name ON students(last_name);
+CREATE INDEX idx_students_major ON students(major);
