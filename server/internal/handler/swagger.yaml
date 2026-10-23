@@ -60,4 +60,123 @@ paths:
       summary: Register a new student
       tags:
       - students
+  /students/{id}:
+    delete:
+      description: Delete an existing student record by ID.
+      parameters:
+      - description: student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: student deleted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid student id
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: student not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a student
+      tags:
+      - students
+    get:
+      description: Retrieve a single student record by its ID.
+      parameters:
+      - description: student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: student record
+          schema:
+            $ref: '#/definitions/store.Student'
+        "400":
+          description: invalid student id
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: student not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a student by ID
+      tags:
+      - students
+    put:
+      consumes:
+      - application/json
+      description: Update an existing student record by ID.
+      parameters:
+      - description: student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: updated student data
+        in: body
+        name: student
+        required: true
+        schema:
+          $ref: '#/definitions/store.Student'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: updated student
+          schema:
+            $ref: '#/definitions/store.Student'
+        "400":
+          description: validation failed or invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: student not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a student
+      tags:
+      - students
 swagger: "2.0"
