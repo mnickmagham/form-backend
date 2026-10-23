@@ -1,0 +1,41 @@
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: students_db
+    ports:
+      - "4656:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ../students_db.sql:/docker-entrypoint-initdb.d/students_db.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SERVER_ADDR: :8080
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: students_db
+    ports:
+      - "4655:8080"
+    volumes:
+      - .:/app
+      - /app/tmp
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

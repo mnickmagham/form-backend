@@ -1,0 +1,16 @@
+root = "."
+
+[build]
+  bin = "tmp/server"
+  cmd = "go build -o ./tmp/server ."
+  delay = 1000
+  exclude_dir = ["tmp", "data"]
+  exclude_regex = ["_test.go"]
+  exclude_unchanged = false
+  follow_symlink = false
+  include_ext = ["go", "mod", "sum"]
+  stop_on_error = true
+  send_interrupt = false
+
+[misc]
+  clean_on_exit = false
