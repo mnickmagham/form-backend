@@ -26,7 +26,7 @@ func Open() (*sql.DB, error) {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
 		env("DB_USER", "root"),
-		env("DB_PASSWORD", "password"),
+		env("DB_PASSWORD", "rootpassword"),
 		env("DB_HOST", "localhost"),
 		env("DB_PORT", "3306"),
 		env("DB_NAME", "students_db"),

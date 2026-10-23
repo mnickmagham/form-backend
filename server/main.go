@@ -7,6 +7,7 @@ import (
 
 	"form-backend/server/internal/handler"
 	"form-backend/server/internal/store"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
@@ -20,6 +21,7 @@ func main() {
 	h := handler.NewStudentHandler(studentStore)
 
 	mux := http.NewServeMux()
+	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
 	mux.HandleFunc("POST /students", h.Register)
 	mux.HandleFunc("GET /students", h.Search)
 	mux.HandleFunc("GET /students/{id}", h.Get)

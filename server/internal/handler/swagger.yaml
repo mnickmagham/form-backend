@@ -1,0 +1,63 @@
+definitions:
+  store.Student:
+    properties:
+      degree:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      major:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+      student_id:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /students:
+    post:
+      consumes:
+      - application/json
+      description: Create a new student record. student_id, name and last_name are
+        required.
+      parameters:
+      - description: student data
+        in: body
+        name: student
+        required: true
+        schema:
+          $ref: '#/definitions/store.Student'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: created student
+          schema:
+            $ref: '#/definitions/store.Student'
+        "400":
+          description: validation failed or invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: student already registered
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new student
+      tags:
+      - students
+swagger: "2.0"
