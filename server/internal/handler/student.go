@@ -21,6 +21,8 @@ type StudentStore interface {
 	Update(int, *store.Student) error
 	Delete(int) error
 	FilterExact(string, string) ([]*store.Student, error)
+	GlobalSearch(string) ([]*store.Student, error)
+	PaginatedSearch(map[string]string, string, string, int, int) ([]*store.Student, int, error)
 }
 
 type StudentHandler struct {
@@ -217,9 +219,91 @@ func (h *StudentHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	respond(w, http.StatusOK, map[string]string{"message": "student deleted"})
 }
 
-// Search handles GET /students. Placeholder — to be implemented per the search plan.
+// @Summary Search students
+// @Description Search students by query (q) across name, last_name, student_id, major, or filter by individual fields. Supports pagination and sorting.
+// @Tags students
+// @Produce json
+// @Param q query string false "Global search term"
+// @Param student_id query string false "Filter by student_id"
+// @Param name query string false "Filter by name"
+// @Param last_name query string false "Filter by last_name"
+// @Param major query string false "Filter by major"
+// @Param degree query string false "Filter by degree"
+// @Param phone_number query string false "Filter by phone_number"
+// @Param sortBy query string false "Sort column (default id)"
+// @Param sortOrder query string false "Sort order ASC or DESC (default ASC)"
+// @Param page query int false "Page number (default 1)"
+// @Param limit query int false "Page size (default 10)"
+// @Success 200 {object} map[string]any "students list with total, page, limit"
+// @Failure 400 {object} map[string]string "invalid pagination params"
+// @Failure 500 {object} map[string]string "internal server error"
+// @Router /students [get]
 func (h *StudentHandler) Search(w http.ResponseWriter, r *http.Request) {
-	respond(w, http.StatusNotImplemented, map[string]string{"error": "not implemented"})
+	q := r.URL.Query().Get("q")
+	if q != "" {
+		students, err := h.store.GlobalSearch(q)
+		if err != nil {
+			log.Printf("global search: %v", err)
+			respond(w, http.StatusInternalServerError, map[string]string{"error": "internal server error"})
+			return
+		}
+		if students == nil {
+			students = []*store.Student{}
+		}
+		respond(w, http.StatusOK, map[string]any{"students": students, "total": len(students)})
+		return
+	}
+
+	page, limit, err := parsePagination(r)
+	if err != nil {
+		respond(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+
+	filters := map[string]string{
+		"student_id":  r.URL.Query().Get("student_id"),
+		"name":        r.URL.Query().Get("name"),
+		"last_name":   r.URL.Query().Get("last_name"),
+		"major":       r.URL.Query().Get("major"),
+		"degree":      r.URL.Query().Get("degree"),
+		"phone_number": r.URL.Query().Get("phone_number"),
+	}
+	sortBy := r.URL.Query().Get("sortBy")
+	sortOrder := r.URL.Query().Get("sortOrder")
+
+	students, total, err := h.store.PaginatedSearch(filters, sortBy, sortOrder, page, limit)
+	if err != nil {
+		log.Printf("paginated search: %v", err)
+		respond(w, http.StatusInternalServerError, map[string]string{"error": "internal server error"})
+		return
+	}
+
+	respond(w, http.StatusOK, map[string]any{
+		"students": students,
+		"total":    total,
+		"page":     page,
+		"limit":    limit,
+	})
+}
+
+func parsePagination(r *http.Request) (int, int, error) {
+	page := 1
+	limit := 10
+	if p := r.URL.Query().Get("page"); p != "" {
+		n, err := strconv.Atoi(p)
+		if err != nil || n < 1 {
+			return 0, 0, errors.New("invalid page")
+		}
+		page = n
+	}
+	if l := r.URL.Query().Get("limit"); l != "" {
+		n, err := strconv.Atoi(l)
+		if err != nil || n < 1 {
+			return 0, 0, errors.New("invalid limit")
+		}
+		limit = n
+	}
+	return page, limit, nil
 }
 
 func parseID(r *http.Request) (int, error) {

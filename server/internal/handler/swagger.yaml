@@ -20,6 +20,77 @@ info:
   contact: {}
 paths:
   /students:
+    get:
+      description: Search students by query (q) across name, last_name, student_id,
+        major, or filter by individual fields. Supports pagination and sorting.
+      parameters:
+      - description: Global search term
+        in: query
+        name: q
+        type: string
+      - description: Filter by student_id
+        in: query
+        name: student_id
+        type: string
+      - description: Filter by name
+        in: query
+        name: name
+        type: string
+      - description: Filter by last_name
+        in: query
+        name: last_name
+        type: string
+      - description: Filter by major
+        in: query
+        name: major
+        type: string
+      - description: Filter by degree
+        in: query
+        name: degree
+        type: string
+      - description: Filter by phone_number
+        in: query
+        name: phone_number
+        type: string
+      - description: Sort column (default id)
+        in: query
+        name: sortBy
+        type: string
+      - description: Sort order ASC or DESC (default ASC)
+        in: query
+        name: sortOrder
+        type: string
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (default 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: students list with total, page, limit
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: invalid pagination params
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search students
+      tags:
+      - students
     post:
       consumes:
       - application/json

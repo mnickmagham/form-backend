@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -85,6 +86,69 @@ func (f *fakeStore) Delete(id int) error {
 		}
 	}
 	return sql.ErrNoRows
+}
+
+func (f *fakeStore) GlobalSearch(value string) ([]*store.Student, error) {
+	if f.err != nil {
+		return nil, f.err
+	}
+	var out []*store.Student
+	for _, s := range f.students {
+		if strings.Contains(s.Name, value) || strings.Contains(s.LastName, value) ||
+			strings.Contains(s.StudentID, value) || strings.Contains(s.Major, value) {
+			out = append(out, s)
+		}
+	}
+	return out, nil
+}
+
+func (f *fakeStore) PaginatedSearch(filters map[string]string, sortBy, sortOrder string, page, limit int) ([]*store.Student, int, error) {
+	if f.err != nil {
+		return nil, 0, f.err
+	}
+	var matched []*store.Student
+	for _, s := range f.students {
+		match := true
+		for col, val := range filters {
+			if val == "" {
+				continue
+			}
+			var field string
+			switch col {
+			case "student_id":
+				field = s.StudentID
+			case "name":
+				field = s.Name
+			case "last_name":
+				field = s.LastName
+			case "major":
+				field = s.Major
+			case "degree":
+				field = s.Degree
+			case "phone_number":
+				field = s.PhoneNumber
+			default:
+				match = false
+			}
+			if !strings.Contains(field, val) {
+				match = false
+			}
+		}
+		if match {
+			matched = append(matched, s)
+		}
+	}
+
+	total := len(matched)
+	start := (page - 1) * limit
+	if start >= total {
+		return []*store.Student{}, total, nil
+	}
+	end := start + limit
+	if end > total {
+		end = total
+	}
+	return matched[start:end], total, nil
 }
 
 func decodeBody(t *testing.T, w *httptest.ResponseRecorder, v any) {
@@ -394,6 +458,150 @@ func TestDeleteStoreError(t *testing.T) {
 	req := httptest.NewRequest(http.MethodDelete, "/students/1", nil)
 	w := httptest.NewRecorder()
 	h.Delete(w, req)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("expected 500, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestSearchGlobal(t *testing.T) {
+	f := &fakeStore{}
+	h := NewStudentHandler(f)
+
+	f.Create(&store.Student{StudentID: "S10001", Name: "Alice", LastName: "Smith", Major: "CS"})
+	f.Create(&store.Student{StudentID: "S10002", Name: "Bob", LastName: "Jones", Major: "Math"})
+	f.Create(&store.Student{StudentID: "S10003", Name: "Carol", LastName: "Smith", Major: "Physics"})
+
+	req := httptest.NewRequest(http.MethodGet, "/students?q=Smith", nil)
+	w := httptest.NewRecorder()
+	h.Search(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var resp map[string]any
+	decodeBody(t, w, &resp)
+	students := resp["students"].([]any)
+	if len(students) != 2 {
+		t.Errorf("expected 2 global search results, got %d", len(students))
+	}
+}
+
+func TestSearchGlobalNoMatch(t *testing.T) {
+	f := &fakeStore{}
+	h := NewStudentHandler(f)
+
+	f.Create(&store.Student{StudentID: "S10001", Name: "Alice", LastName: "Smith", Major: "CS"})
+
+	req := httptest.NewRequest(http.MethodGet, "/students?q=ZZZ", nil)
+	w := httptest.NewRecorder()
+	h.Search(w, req)
+
+	var resp map[string]any
+	decodeBody(t, w, &resp)
+	students := resp["students"].([]any)
+	if len(students) != 0 {
+		t.Errorf("expected 0 results, got %d", len(students))
+	}
+}
+
+func TestSearchFieldFilter(t *testing.T) {
+	f := &fakeStore{}
+	h := NewStudentHandler(f)
+
+	f.Create(&store.Student{StudentID: "S10001", Name: "Alice", LastName: "Smith", Major: "CS"})
+	f.Create(&store.Student{StudentID: "S10002", Name: "Bob", LastName: "Jones", Major: "Math"})
+
+	req := httptest.NewRequest(http.MethodGet, "/students?major=Math", nil)
+	w := httptest.NewRecorder()
+	h.Search(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var resp map[string]any
+	decodeBody(t, w, &resp)
+	students := resp["students"].([]any)
+	if len(students) != 1 {
+		t.Errorf("expected 1 filtered result, got %d", len(students))
+	}
+}
+
+func TestSearchPagination(t *testing.T) {
+	f := &fakeStore{}
+	h := NewStudentHandler(f)
+
+	for i := 0; i < 5; i++ {
+		f.Create(&store.Student{StudentID: fmt.Sprintf("S%d", i), Name: fmt.Sprintf("Student%d", i), Major: "CS"})
+	}
+
+	// page 1, limit 2
+	req := httptest.NewRequest(http.MethodGet, "/students?page=1&limit=2", nil)
+	w := httptest.NewRecorder()
+	h.Search(w, req)
+
+	var resp map[string]any
+	decodeBody(t, w, &resp)
+	students := resp["students"].([]any)
+	if len(students) != 2 {
+		t.Errorf("expected 2 on page 1, got %d", len(students))
+	}
+	if resp["total"] != float64(5) {
+		t.Errorf("expected total 5, got %v", resp["total"])
+	}
+	if resp["page"] != float64(1) || resp["limit"] != float64(2) {
+		t.Errorf("expected page 1 limit 2, got page=%v limit=%v", resp["page"], resp["limit"])
+	}
+
+	// page 3, limit 2 -> 1 item
+	req = httptest.NewRequest(http.MethodGet, "/students?page=3&limit=2", nil)
+	w = httptest.NewRecorder()
+	h.Search(w, req)
+	decodeBody(t, w, &resp)
+	students = resp["students"].([]any)
+	if len(students) != 1 {
+		t.Errorf("expected 1 on page 3, got %d", len(students))
+	}
+
+	// page beyond range
+	req = httptest.NewRequest(http.MethodGet, "/students?page=10&limit=2", nil)
+	w = httptest.NewRecorder()
+	h.Search(w, req)
+	decodeBody(t, w, &resp)
+	students = resp["students"].([]any)
+	if len(students) != 0 {
+		t.Errorf("expected 0 beyond range, got %d", len(students))
+	}
+}
+
+func TestSearchInvalidPagination(t *testing.T) {
+	f := &fakeStore{}
+	h := NewStudentHandler(f)
+
+	req := httptest.NewRequest(http.MethodGet, "/students?page=abc", nil)
+	w := httptest.NewRecorder()
+	h.Search(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d: %s", w.Code, w.Body.String())
+	}
+
+	req = httptest.NewRequest(http.MethodGet, "/students?limit=0", nil)
+	w = httptest.NewRecorder()
+	h.Search(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestSearchStoreError(t *testing.T) {
+	f := &fakeStore{err: &boomError{}}
+	h := NewStudentHandler(f)
+
+	req := httptest.NewRequest(http.MethodGet, "/students?q=test", nil)
+	w := httptest.NewRecorder()
+	h.Search(w, req)
 
 	if w.Code != http.StatusInternalServerError {
 		t.Fatalf("expected 500, got %d: %s", w.Code, w.Body.String())
