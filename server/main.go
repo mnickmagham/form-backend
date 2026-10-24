@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"form-backend/server/internal/handler"
+	"form-backend/server/internal/middleware"
 	"form-backend/server/internal/store"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -29,13 +30,15 @@ func main() {
 	mux.HandleFunc("PUT /students/{id}", h.Update)
 	mux.HandleFunc("DELETE /students/{id}", h.Delete)
 
+	wrapped := middleware.Logger(mux)
+
 	addr := os.Getenv("SERVER_ADDR")
 	if addr == "" {
 		addr = ":8080"
 	}
 
 	log.Printf("listening on %s", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, wrapped); err != nil {
 		log.Fatalf("server: %v", err)
 	}
 }

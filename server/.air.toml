@@ -3,7 +3,7 @@ root = "."
 [build]
   bin = "tmp/server"
   cmd = "go build -o ./tmp/server ."
-  delay = 1000
+  delay = 10
   exclude_dir = ["tmp", "data"]
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
