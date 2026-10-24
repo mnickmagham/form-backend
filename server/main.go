@@ -38,7 +38,7 @@ func main() {
 	}
 	trustProxy := strings.EqualFold(os.Getenv("RATE_LIMIT_TRUST_PROXY"), "true")
 
-	wrapped := middleware.Logger(middleware.RateLimit(mux, rlPerMinute, trustProxy))
+	wrapped := middleware.Recovery(middleware.Logger(middleware.RateLimit(mux, rlPerMinute, trustProxy)))
 
 	addr := os.Getenv("SERVER_ADDR")
 	if addr == "" {
