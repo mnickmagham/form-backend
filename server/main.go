@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"form-backend/server/internal/handler"
 	"form-backend/server/internal/middleware"
@@ -30,7 +32,13 @@ func main() {
 	mux.HandleFunc("PUT /students/{id}", h.Update)
 	mux.HandleFunc("DELETE /students/{id}", h.Delete)
 
-	wrapped := middleware.Logger(mux)
+	rlPerMinute := 60
+	if v := os.Getenv("RATE_LIMIT_PER_MINUTE"); v != "" {
+		fmt.Sscanf(v, "%d", &rlPerMinute)
+	}
+	trustProxy := strings.EqualFold(os.Getenv("RATE_LIMIT_TRUST_PROXY"), "true")
+
+	wrapped := middleware.Logger(middleware.RateLimit(mux, rlPerMinute, trustProxy))
 
 	addr := os.Getenv("SERVER_ADDR")
 	if addr == "" {
