@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student API Test UI</title>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+  section { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; }
+  h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 0.75rem; }
+  label { display: block; margin: 0.4rem 0 0.15rem; font-size: 0.9rem; }
+  input[type="text"], input[type="number"] { width: 100%; max-width: 260px; padding: 0.3rem; font-size: 0.9rem; box-sizing: border-box; }
+  button { margin-top: 0.5rem; padding: 0.4rem 0.9rem; font-size: 0.9rem; cursor: pointer; }
+  button.secondary { background: #f3f3f3; border: 1px solid #999; }
+  button.danger { background: #ffe6e6; border: 1px solid #cc6666; color: #900; }
+  .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end; }
+  pre { background: #f6f8fa; border: 1px solid #ddd; padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.85rem; max-height: 300px; }
+  .status { display: inline-block; width: 1.6rem; text-align: center; font-weight: bold; margin-right: 0.4rem; }
+  .status.ok { color: #090; }
+  .status.err { color: #c00; }
+  .hidden { display: none; }
+  .endpoint { font-family: ui-monospace, monospace; background: #eef; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.85rem; }
+  .note { font-size: 0.85rem; color: #555; margin-top: 0.25rem; }
+</style>
+</head>
+<body>
+
+<h1>Student API Test UI</h1>
+<p class="note">Server: <span id="server"></span></p>
+
+<!-- Register -->
+<section>
+  <h2>Register Student &mdash; <span class="endpoint">POST /students</span></h2>
+  <div class="row">
+    <div><label>student_id</label><input type="text" id="reg-student_id" value="S99999"></div>
+    <div><label>name</label><input type="text" id="reg-name" value="Test"></div>
+    <div><label>last_name</label><input type="text" id="reg-last_name" value="User"></div>
+    <div><label>major</label><input type="text" id="reg-major" value="CS"></div>
+    <div><label>degree</label><input type="text" id="reg-degree" value="BS"></div>
+    <div><label>phone_number</label><input type="text" id="reg-phone_number" value="555-0000"></div>
+    <button onclick="doRegister()">Register</button>
+  </div>
+  <pre id="reg-out" class="hidden"></pre>
+</section>
+
+<!-- Get -->
+<section>
+  <h2>Get Student &mdash; <span class="endpoint">GET /students/{id}</span></h2>
+  <div class="row">
+    <div><label>id</label><input type="number" id="get-id" value="1"></div>
+    <button onclick="doGet()">Get</button>
+    <button class="secondary" onclick="fillExampleGet()">load example</button>
+  </div>
+  <pre id="get-out" class="hidden"></pre>
+</section>
+
+<!-- Update -->
+<section>
+  <h2>Update Student &mdash; <span class="endpoint">PUT /students/{id}</span></h2>
+  <div class="row">
+    <div><label>id</label><input type="number" id="upd-id" value="1"></div>
+    <div><label>student_id</label><input type="text" id="upd-student_id" value="S99999"></div>
+    <div><label>name</label><input type="text" id="upd-name" value="Updated"></div>
+    <div><label>last_name</label><input type="text" id="upd-last_name" value="Name"></div>
+    <div><label>major</label><input type="text" id="upd-major" value="Math"></div>
+    <div><label>degree</label><input type="text" id="upd-degree" value="BS"></div>
+    <div><label>phone_number</label><input type="text" id="upd-phone_number" value="555-9999"></div>
+    <button onclick="doUpdate()">Update</button>
+  </div>
+  <pre id="upd-out" class="hidden"></pre>
+</section>
+
+<!-- Delete -->
+<section>
+  <h2>Delete Student &mdash; <span class="endpoint">DELETE /students/{id}</span></h2>
+  <div class="row">
+    <div><label>id</label><input type="number" id="del-id" value="1"></div>
+    <button onclick="doDelete()">Delete</button>
+    <button class="danger" onclick="confirmDel()">confirm delete</button>
+  </div>
+  <pre id="del-out" class="hidden"></pre>
+</section>
+
+<!-- Search -->
+<section>
+  <h2>Search Students &mdash; <span class="endpoint">GET /students</span></h2>
+  <div class="row">
+    <div><label>q (global search)</label><input type="text" id="search-q" placeholder="e.g. Smith"></div>
+    <div><label>student_id</label><input type="text" id="search-student_id"></div>
+    <div><label>name</label><input type="text" id="search-name"></div>
+    <div><label>last_name</label><input type="text" id="search-last_name"></div>
+    <div><label>major</label><input type="text" id="search-major" placeholder="e.g. CS"></div>
+    <div><label>degree</label><input type="text" id="search-degree"></div>
+    <div><label>phone_number</label><input type="text" id="search-phone_number"></div>
+  </div>
+  <div class="row">
+    <div><label>sortBy</label><input type="text" id="search-sortBy" value="id"></div>
+    <div><label>sortOrder</label><input type="text" id="search-sortOrder" value="ASC"></div>
+    <div><label>page</label><input type="number" id="search-page" value="1" min="1"></div>
+    <div><label>limit</label><input type="number" id="search-limit" value="10" min="1"></div>
+    <button onclick="doSearch()">Search</button>
+    <button class="secondary" onclick="clearSearch()">clear</button>
+  </div>
+  <pre id="search-out" class="hidden"></pre>
+</section>
+
+<script>
+const BASE = location.origin.replace(/^http/, 'ws').replace(/:4655$/, ':4655');
+document.getElementById('server').textContent = location.origin;
+
+function show(id, status, body) {
+  const el = document.getElementById(id);
+  el.classList.remove('hidden');
+  const s = document.createElement('span');
+  s.className = 'status' + (status >= 200 && status < 300 ? ' ok' : ' err');
+  s.textContent = status;
+  el.textContent = '';
+  el.appendChild(s);
+  const pre = document.createElement('pre');
+  pre.textContent = typeof body === 'string' ? body : JSON.stringify(body, null, 2);
+  el.appendChild(pre);
+}
+
+function hide(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+function errOut(id, msg) {
+  const el = document.getElementById(id);
+  el.classList.remove('hidden');
+  el.textContent = '';
+  const s = document.createElement('span');
+  s.className = 'status err';
+  s.textContent = 'ERR';
+  el.appendChild(s);
+  const pre = document.createElement('pre');
+  pre.textContent = msg;
+  el.appendChild(pre);
+}
+
+async function api(method, path, body) {
+  const url = location.origin + path;
+  const res = await fetch(url, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  let data;
+  try { data = await res.json(); } catch { data = await res.text(); }
+  return { status: res.status, body: data, url };
+}
+
+async function doRegister() {
+  hide('reg-out');
+  try {
+    const body = {
+      student_id: document.getElementById('reg-student_id').value,
+      name: document.getElementById('reg-name').value,
+      last_name: document.getElementById('reg-last_name').value,
+      major: document.getElementById('reg-major').value,
+      degree: document.getElementById('reg-degree').value,
+      phone_number: document.getElementById('reg-phone_number').value,
+    };
+    const { status, body: data, url } = await api('POST', '/students', body);
+    show('reg-out', status, { url, method: 'POST', body, response: data });
+  } catch (e) { errOut('reg-out', e.message); }
+}
+
+async function doGet() {
+  hide('get-out');
+  try {
+    const id = document.getElementById('get-id').value;
+    const { status, body: data, url } = await api('GET', '/students/' + id);
+    show('get-out', status, { url, method: 'GET', response: data });
+  } catch (e) { errOut('get-out', e.message); }
+}
+
+function fillExampleGet() {
+  document.getElementById('get-id').value = 1;
+}
+
+async function doUpdate() {
+  hide('upd-out');
+  try {
+    const id = document.getElementById('upd-id').value;
+    const body = {
+      student_id: document.getElementById('upd-student_id').value,
+      name: document.getElementById('upd-name').value,
+      last_name: document.getElementById('upd-last_name').value,
+      major: document.getElementById('upd-major').value,
+      degree: document.getElementById('upd-degree').value,
+      phone_number: document.getElementById('upd-phone_number').value,
+    };
+    const { status, body: data, url } = await api('PUT', '/students/' + id, body);
+    show('upd-out', status, { url, method: 'PUT', body, response: data });
+  } catch (e) { errOut('upd-out', e.message); }
+}
+
+async function doDelete() {
+  hide('del-out');
+  try {
+    const id = document.getElementById('del-id').value;
+    const { status, body: data, url } = await api('DELETE', '/students/' + id);
+    show('del-out', status, { url, method: 'DELETE', response: data });
+  } catch (e) { errOut('del-out', e.message); }
+}
+
+function confirmDel() {
+  if (confirm('Really delete student ' + document.getElementById('del-id').value + '?')) {
+    doDelete();
+  }
+}
+
+async function doSearch() {
+  hide('search-out');
+  try {
+    const params = new URLSearchParams();
+    const fields = ['q', 'student_id', 'name', 'last_name', 'major', 'degree', 'phone_number', 'sortBy', 'sortOrder', 'page', 'limit'];
+    for (const f of fields) {
+      const v = document.getElementById('search-' + f).value;
+      if (v !== '') params.set(f, v);
+    }
+    const { status, body: data, url } = await api('GET', '/students?' + params.toString());
+    show('search-out', status, { url, method: 'GET', response: data });
+  } catch (e) { errOut('search-out', e.message); }
+}
+
+function clearSearch() {
+  for (const f of ['q', 'student_id', 'name', 'last_name', 'major', 'degree', 'phone_number', 'sortBy', 'sortOrder', 'page', 'limit']) {
+    const el = document.getElementById('search-' + f);
+    if (el) el.value = '';
+  }
+  document.getElementById('search-sortBy').value = 'id';
+  document.getElementById('search-sortOrder').value = 'ASC';
+  document.getElementById('search-page').value = '1';
+  document.getElementById('search-limit').value = '10';
+  hide('search-out');
+}
+</script>
+
+</body>
+</html>

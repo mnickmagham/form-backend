@@ -21,15 +21,10 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    environment:
-      SERVER_ADDR: :8080
-      DB_USER: root
-      DB_PASSWORD: rootpassword
-      DB_HOST: db
-      DB_PORT: "3306"
-      DB_NAME: students_db
+    env_file:
+      - .env
     ports:
-      - "4655:8080"
+      - "${SERVER_PORT:-4655}:${SERVER_PORT:-4655}"
     volumes:
       - .:/app
       - /app/tmp

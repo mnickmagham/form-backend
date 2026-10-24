@@ -14,16 +14,14 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
+    "produces": ["application/json"],
+    "consumes": ["application/json"],
     "paths": {
         "/students": {
             "get": {
                 "description": "Search students by query (q) across name, last_name, student_id, major, or filter by individual fields. Supports pagination and sorting.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "students"
-                ],
+                "produces": ["application/json"],
+                "tags": ["students"],
                 "summary": "Search students",
                 "parameters": [
                     {
@@ -98,40 +96,79 @@ const docTemplate = `{
                         "description": "students list with total, page, limit",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "required": ["students", "total", "page", "limit"],
+                            "properties": {
+                                "students": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/store.Student"
+                                    },
+                                    "description": "List of matching students"
+                                },
+                                "total": {
+                                    "type": "integer",
+                                    "description": "Total number of matching records"
+                                },
+                                "page": {
+                                    "type": "integer",
+                                    "description": "Current page number"
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "description": "Page size"
+                                }
+                            },
+                            "example": {
+                                "students": [
+                                    {
+                                        "id": 1,
+                                        "student_id": "S00001",
+                                        "name": "Mark",
+                                        "last_name": "Miller",
+                                        "major": "Communications",
+                                        "degree": "Master",
+                                        "phone_number": "428-342-2679"
+                                    }
+                                ],
+                                "total": 18,
+                                "page": 1,
+                                "limit": 10
+                            }
                         }
                     },
                     "400": {
                         "description": "invalid pagination params",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "invalid page"
+                                }
+                            },
+                            "example": {"error": "invalid page"}
                         }
                     },
                     "500": {
                         "description": "internal server error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "internal server error"
+                                }
+                            },
+                            "example": {"error": "internal server error"}
                         }
                     }
                 }
             },
             "post": {
                 "description": "Create a new student record. student_id, name and last_name are required.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "students"
-                ],
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "tags": ["students"],
                 "summary": "Register a new student",
                 "parameters": [
                     {
@@ -149,33 +186,64 @@ const docTemplate = `{
                         "description": "created student",
                         "schema": {
                             "$ref": "#/definitions/store.Student"
+                        },
+                        "example": {
+                            "id": 1054,
+                            "student_id": "S99999",
+                            "name": "Test",
+                            "last_name": "User",
+                            "major": "CS",
+                            "degree": "BS",
+                            "phone_number": "555-0000"
                         }
                     },
                     "400": {
                         "description": "validation failed or invalid request body",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "validation failed"
+                                },
+                                "details": {
+                                    "type": "object",
+                                    "properties": {
+                                        "missing": {
+                                            "type": "string",
+                                            "example": "student_id, name, last_name"
+                                        }
+                                    },
+                                    "example": {"missing": "student_id, name, last_name"}
+                                }
+                            },
+                            "example": {"error": "validation failed", "details": {"missing": "student_id, name, last_name"}}
                         }
                     },
                     "409": {
                         "description": "student already registered",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "student already registered"
+                                }
+                            },
+                            "example": {"error": "student already registered"}
                         }
                     },
                     "500": {
                         "description": "internal server error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "internal server error"
+                                }
+                            },
+                            "example": {"error": "internal server error"}
                         }
                     }
                 }
@@ -184,12 +252,8 @@ const docTemplate = `{
         "/students/{id}": {
             "get": {
                 "description": "Retrieve a single student record by its ID.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "students"
-                ],
+                "produces": ["application/json"],
+                "tags": ["students"],
                 "summary": "Get a student by ID",
                 "parameters": [
                     {
@@ -205,48 +269,63 @@ const docTemplate = `{
                         "description": "student record",
                         "schema": {
                             "$ref": "#/definitions/store.Student"
+                        },
+                        "example": {
+                            "id": 32,
+                            "student_id": "S00001",
+                            "name": "Mark",
+                            "last_name": "Miller",
+                                        "major": "Communications",
+                                        "degree": "Master",
+                                        "phone_number": "428-342-2679"
                         }
                     },
                     "400": {
                         "description": "invalid student id",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "invalid student id"
+                                }
+                            },
+                            "example": {"error": "invalid student id"}
                         }
                     },
                     "404": {
                         "description": "student not found",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "student not found"
+                                }
+                            },
+                            "example": {"error": "student not found"}
                         }
                     },
                     "500": {
                         "description": "internal server error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "internal server error"
+                                }
+                            },
+                            "example": {"error": "internal server error"}
                         }
                     }
                 }
             },
             "put": {
                 "description": "Update an existing student record by ID.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "students"
-                ],
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "tags": ["students"],
                 "summary": "Update a student",
                 "parameters": [
                     {
@@ -271,45 +350,72 @@ const docTemplate = `{
                         "description": "updated student",
                         "schema": {
                             "$ref": "#/definitions/store.Student"
+                        },
+                        "example": {
+                            "id": 32,
+                            "student_id": "S00001",
+                            "name": "Updated",
+                            "last_name": "Name",
+                            "major": "Math",
+                            "degree": "BS",
+                            "phone_number": "555-9999"
                         }
                     },
                     "400": {
                         "description": "validation failed or invalid request body",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "validation failed"
+                                },
+                                "details": {
+                                    "type": "object",
+                                    "properties": {
+                                        "missing": {
+                                            "type": "string",
+                                            "example": "student_id, name, last_name"
+                                        }
+                                    },
+                                    "example": {"missing": "student_id, name, last_name"}
+                                }
+                            },
+                            "example": {"error": "validation failed", "details": {"missing": "student_id, name, last_name"}}
                         }
                     },
                     "404": {
                         "description": "student not found",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "student not found"
+                                }
+                            },
+                            "example": {"error": "student not found"}
                         }
                     },
                     "500": {
                         "description": "internal server error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "internal server error"
+                                }
+                            },
+                            "example": {"error": "internal server error"}
                         }
                     }
                 }
             },
             "delete": {
                 "description": "Delete an existing student record by ID.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "students"
-                ],
+                "produces": ["application/json"],
+                "tags": ["students"],
                 "summary": "Delete a student",
                 "parameters": [
                     {
@@ -325,36 +431,52 @@ const docTemplate = `{
                         "description": "student deleted",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "student deleted"
+                                }
+                            },
+                            "example": {"message": "student deleted"}
                         }
                     },
                     "400": {
                         "description": "invalid student id",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "invalid student id"
+                                }
+                            },
+                            "example": {"error": "invalid student id"}
                         }
                     },
                     "404": {
                         "description": "student not found",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "student not found"
+                                }
+                            },
+                            "example": {"error": "student not found"}
                         }
                     },
                     "500": {
                         "description": "internal server error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "internal server error"
+                                }
+                            },
+                            "example": {"error": "internal server error"}
                         }
                     }
                 }
@@ -364,27 +486,42 @@ const docTemplate = `{
     "definitions": {
         "store.Student": {
             "type": "object",
+            "required": ["student_id", "name", "last_name"],
             "properties": {
-                "degree": {
-                    "type": "string"
-                },
                 "id": {
-                    "type": "integer"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "major": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phone_number": {
-                    "type": "string"
+                    "type": "integer",
+                    "description": "Database primary key (auto-increment)",
+                    "example": 1
                 },
                 "student_id": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Business student identifier (unique)",
+                    "example": "S00001"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Student first name",
+                    "example": "Mark"
+                },
+                "last_name": {
+                    "type": "string",
+                    "description": "Student last name",
+                    "example": "Miller"
+                },
+                "major": {
+                    "type": "string",
+                    "description": "Student major",
+                    "example": "Communications"
+                },
+                "degree": {
+                    "type": "string",
+                    "description": "Student degree level",
+                    "example": "Master"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "description": "Student phone number",
+                    "example": "428-342-2679"
                 }
             }
         }

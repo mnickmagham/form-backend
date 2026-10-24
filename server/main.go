@@ -22,6 +22,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
+	mux.Handle("GET /", http.FileServer(http.Dir("ui")))
 	mux.HandleFunc("POST /students", h.Register)
 	mux.HandleFunc("GET /students", h.Search)
 	mux.HandleFunc("GET /students/{id}", h.Get)

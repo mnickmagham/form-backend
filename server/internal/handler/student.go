@@ -40,9 +40,9 @@ func NewStudentHandler(s StudentStore) *StudentHandler {
 // @Produce json
 // @Param student body store.Student true "student data"
 // @Success 201 {object} store.Student "created student"
-// @Failure 400 {object} map[string]string "validation failed or invalid request body"
-// @Failure 409 {object} map[string]string "student already registered"
-// @Failure 500 {object} map[string]string "internal server error"
+// @Failure 400 {object} map[string]any '{"error":"validation failed","details":{"missing":"student_id, name, last_name"}}'
+// @Failure 409 {object} map[string]string '{"error":"student already registered"}'
+// @Failure 500 {object} map[string]string '{"error":"internal server error"}'
 // @Router /students [post]
 func (h *StudentHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var st store.Student
@@ -95,9 +95,9 @@ func (h *StudentHandler) Register(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param id path int true "student ID"
 // @Success 200 {object} store.Student "student record"
-// @Failure 400 {object} map[string]string "invalid student id"
-// @Failure 404 {object} map[string]string "student not found"
-// @Failure 500 {object} map[string]string "internal server error"
+// @Failure 400 {object} map[string]string '{"error":"invalid student id"}'
+// @Failure 404 {object} map[string]string '{"error":"student not found"}'
+// @Failure 500 {object} map[string]string '{"error":"internal server error"}'
 // @Router /students/{id} [get]
 func (h *StudentHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
@@ -128,9 +128,9 @@ func (h *StudentHandler) Get(w http.ResponseWriter, r *http.Request) {
 // @Param id path int true "student ID"
 // @Param student body store.Student true "updated student data"
 // @Success 200 {object} store.Student "updated student"
-// @Failure 400 {object} map[string]string "validation failed or invalid request body"
-// @Failure 404 {object} map[string]string "student not found"
-// @Failure 500 {object} map[string]string "internal server error"
+// @Failure 400 {object} map[string]any '{"error":"validation failed","details":{"missing":"student_id, name, last_name"}}'
+// @Failure 404 {object} map[string]string '{"error":"student not found"}'
+// @Failure 500 {object} map[string]string '{"error":"internal server error"}'
 // @Router /students/{id} [put]
 func (h *StudentHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
@@ -188,10 +188,10 @@ func (h *StudentHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Tags students
 // @Produce json
 // @Param id path int true "student ID"
-// @Success 200 {object} map[string]string "student deleted"
-// @Failure 400 {object} map[string]string "invalid student id"
-// @Failure 404 {object} map[string]string "student not found"
-// @Failure 500 {object} map[string]string "internal server error"
+// @Success 200 {object} map[string]string '{"message":"student deleted"}'
+// @Failure 400 {object} map[string]string '{"error":"invalid student id"}'
+// @Failure 404 {object} map[string]string '{"error":"student not found"}'
+// @Failure 500 {object} map[string]string '{"error":"internal server error"}'
 // @Router /students/{id} [delete]
 func (h *StudentHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
@@ -234,9 +234,9 @@ func (h *StudentHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Param sortOrder query string false "Sort order ASC or DESC (default ASC)"
 // @Param page query int false "Page number (default 1)"
 // @Param limit query int false "Page size (default 10)"
-// @Success 200 {object} map[string]any "students list with total, page, limit"
-// @Failure 400 {object} map[string]string "invalid pagination params"
-// @Failure 500 {object} map[string]string "internal server error"
+// @Success 200 {object} map[string]any '{"students":[{"id":1,"student_id":"S00001","name":"Mark","last_name":"Miller","major":"Communications","degree":"Master","phone_number":"428-342-2679"}],"total":18,"page":1,"limit":10}'
+// @Failure 400 {object} map[string]string '{"error":"invalid page"}'
+// @Failure 500 {object} map[string]string '{"error":"internal server error"}'
 // @Router /students [get]
 func (h *StudentHandler) Search(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
