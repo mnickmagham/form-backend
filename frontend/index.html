@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سامانه مدیریت اطلاعات دانشجویان</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="cap" aria-hidden="true">🎓</span>
+      <h1>سامانه مدیریت اطلاعات دانشجویان</h1>
+    </div>
+    <nav>
+      <a class="active" href="#">خانه</a>
+      <a href="#">درباره</a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel form-panel">
+      <h2><span class="person-icon" aria-hidden="true">👤</span> ثبت اطلاعات دانشجو</h2>
+      <form>
+        <label for="student-id">شماره دانشجویی</label>
+        <input id="student-id" type="text" placeholder="مثال: 1405123">
+
+        <label for="student-name">نام و نام خانوادگی</label>
+        <input id="student-name" type="text" placeholder="مثال: علی محمدی">
+
+        <label for="major">رشته تحصیلی</label>
+        <select id="major">
+          <option value="">انتخاب رشته</option>
+          <option>مهندسی کامپیوتر</option>
+          <option>مهندسی برق</option>
+          <option>مهندسی مکانیک</option>
+          <option>مدیریت صنعتی</option>
+          <option>علوم کامپیوتر</option>
+        </select>
+
+        <label for="degree">مقطع تحصیلی</label>
+        <select id="degree">
+          <option value="">انتخاب مقطع</option>
+          <option>کاردانی</option>
+          <option>کارشناسی</option>
+          <option>کارشناسی ارشد</option>
+          <option>دکتری</option>
+        </select>
+
+        <label for="phone">شماره تماس</label>
+        <input id="phone" type="tel" placeholder="مثال: 09123456789">
+
+        <button type="button" class="submit-btn">ثبت اطلاعات <span>＋</span></button>
+      </form>
+    </section>
+
+    <section class="panel table-panel">
+      <h2><span class="search-icon" aria-hidden="true">⌕</span> جستجوی دانشجو</h2>
+      <div class="search-row">
+        <input type="search" placeholder="نام، شماره دانشجویی یا رشته را وارد کنید...">
+        <button type="button">جستجو</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ردیف</th>
+              <th>شماره دانشجویی</th>
+              <th>نام و نام خانوادگی</th>
+              <th>رشته تحصیلی</th>
+              <th>مقطع</th>
+              <th>شماره تماس</th>
+              <th>عملیات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>۱</td><td>1405123</td><td>علی محمدی</td><td>مهندسی کامپیوتر</td><td>کارشناسی</td><td>09123456789</td>
+              <td class="actions"><button class="edit" aria-label="ویرایش">✎</button><button class="delete" aria-label="حذف">▣</button></td>
+            </tr>
+            <tr>
+              <td>۲</td><td>1405234</td><td>سارا احمدی</td><td>مهندسی برق</td><td>کارشناسی</td><td>09122334455</td>
+              <td class="actions"><button class="edit" aria-label="ویرایش">✎</button><button class="delete" aria-label="حذف">▣</button></td>
+            </tr>
+            <tr>
+              <td>۳</td><td>1405345</td><td>رضا کریمی</td><td>مهندسی مکانیک</td><td>کارشناسی</td><td>09331112233</td>
+              <td class="actions"><button class="edit" aria-label="ویرایش">✎</button><button class="delete" aria-label="حذف">▣</button></td>
+            </tr>
+            <tr>
+              <td>۴</td><td>1405456</td><td>مریم حسینی</td><td>مدیریت صنعتی</td><td>کارشناسی ارشد</td><td>09129876543</td>
+              <td class="actions"><button class="edit" aria-label="ویرایش">✎</button><button class="delete" aria-label="حذف">▣</button></td>
+            </tr>
+            <tr>
+              <td>۵</td><td>1405567</td><td>حامد رضایی</td><td>علوم کامپیوتر</td><td>کارشناسی</td><td>09218877665</td>
+              <td class="actions"><button class="edit" aria-label="ویرایش">✎</button><button class="delete" aria-label="حذف">▣</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button type="button" disabled>قبلی</button>
+        <button type="button" class="current">۱</button>
+        <button type="button">بعدی</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
