@@ -52,6 +52,10 @@
   const sortFieldSelect = document.getElementById("sort-field");
   const sortOrderSelect = document.getElementById("sort-order");
   const tbody = document.getElementById("students-tbody");
+  const aboutLink = document.getElementById("about-link");
+  const aboutModal = document.getElementById("about-modal");
+  const aboutOverlay = document.getElementById("about-overlay");
+  const aboutClose = document.getElementById("about-close");
   const prevButton = document.getElementById("prev-page");
   const nextButton = document.getElementById("next-page");
   const pageIndicator = document.getElementById("page-indicator");
@@ -562,13 +566,37 @@
    * List / search / pagination
    * ------------------------------------------------------------------ */
 
+  function filterStudents(students) {
+    if (!state.filterField || !state.filterValue.trim()) return students;
+    const value = state.filterValue.trim().toLowerCase();
+    const field = state.filterField;
+    return students.filter((student) => {
+      const raw = student == null ? "" : student[field];
+      return String(raw == null ? "" : raw).toLowerCase().includes(value);
+    });
+  }
+
+  function sortStudents(students) {
+    if (!state.sortField) return students;
+    const dir = state.sortOrder === "DESC" ? -1 : 1;
+    return [...students].sort((a, b) => {
+      const av = a == null ? "" : a[state.sortField];
+      const bv = b == null ? "" : b[state.sortField];
+      if (av < bv) return -dir;
+      if (av > bv) return dir;
+      return 0;
+    });
+  }
+
   function sliceSearchResults(students) {
-    const pages = Math.max(1, Math.ceil(students.length / PAGE_SIZE));
+    let working = filterStudents(students);
+    working = sortStudents(working);
+    const pages = Math.max(1, Math.ceil(working.length / PAGE_SIZE));
     const page = Math.min(Math.max(1, state.page), pages);
     const start = (page - 1) * PAGE_SIZE;
     return {
-      students: students.slice(start, start + PAGE_SIZE),
-      total: students.length,
+      students: working.slice(start, start + PAGE_SIZE),
+      total: working.length,
       page
     };
   }
@@ -826,9 +854,6 @@
     if (isLimited()) return;
     state.filterField = filterFieldSelect.value;
     state.filterValue = filterValueInput.value.trim();
-    state.currentSearch = "";
-    searchInput.value = "";
-    state.qCache = null;
     state.page = 1;
     syncUrl();
     loadStudents();
@@ -876,7 +901,7 @@
 
     state.filterField = params.get("filter_field") || "";
     state.filterValue = params.get("filter_value") || "";
-    if (filterFieldSelect) filterFieldSelect.value = state.filterField || "id";
+    if (filterFieldSelect) filterFieldSelect.value = state.filterField || "";
     if (filterValueInput) filterValueInput.value = state.filterValue;
 
     state.sortField = params.get("sort_by") || "id";
@@ -943,6 +968,21 @@
   filterValueInput.addEventListener("input", applyFilter);
   sortFieldSelect.addEventListener("change", applySort);
   sortOrderSelect.addEventListener("change", applySort);
+
+  function openAbout() {
+    aboutModal.hidden = false;
+  }
+
+  function closeAbout() {
+    aboutModal.hidden = true;
+  }
+
+  aboutLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    openAbout();
+  });
+  aboutClose.addEventListener("click", closeAbout);
+  aboutOverlay.addEventListener("click", closeAbout);
 
   prevButton.addEventListener("click", () => goToPage(state.page - 1));
   nextButton.addEventListener("click", () => goToPage(state.page + 1));
