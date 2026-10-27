@@ -119,6 +119,9 @@ func Logger(next http.Handler) http.Handler {
 		if id == "" {
 			id = newID()
 		}
+		// Headers must be set before the handler writes the response;
+		// setting them afterwards is a no-op on a real server.
+		w.Header().Set("X-Request-ID", id)
 		ctx := context.WithValue(r.Context(), requestIDKey{}, id)
 		r = r.WithContext(ctx)
 
@@ -145,8 +148,6 @@ func Logger(next http.Handler) http.Handler {
 			slog.Int("bytes", rw.bytes),
 			slog.String("duration", dur.String()),
 		)
-
-		w.Header().Set("X-Request-ID", id)
 	})
 }
 

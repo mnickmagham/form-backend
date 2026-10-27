@@ -21,7 +21,7 @@
   <main class="layout">
     <section class="panel form-panel">
       <h2><span class="person-icon" aria-hidden="true">👤</span> ثبت اطلاعات دانشجو</h2>
-      <form>
+      <form id="student-form">
         <label for="student-id">شماره دانشجویی</label>
         <input id="student-id" type="text" placeholder="مثال: 1405123">
 
@@ -50,18 +50,51 @@
         <label for="phone">شماره تماس</label>
         <input id="phone" type="tel" placeholder="مثال: 09123456789">
 
-        <button type="button" class="submit-btn">ثبت اطلاعات <span>＋</span></button>
+        <button type="submit" id="submit-btn" class="submit-btn">ثبت اطلاعات <span>＋</span></button>
       </form>
+      <button type="button" id="cancel-edit-btn" hidden>لغو ویرایش</button>
+      <div id="form-message" class="status-message"></div>
     </section>
 
     <section class="panel table-panel">
       <h2><span class="search-icon" aria-hidden="true">⌕</span> جستجوی دانشجو</h2>
       <div class="search-row">
-        <input type="search" placeholder="نام، شماره دانشجویی یا رشته را وارد کنید...">
-        <button type="button">جستجو</button>
+        <input id="search-input" type="search" placeholder="نام، شماره دانشجویی یا رشته را وارد کنید...">
+        <button type="button" id="search-btn">جستجو</button>
       </div>
 
-      <div class="table-wrap">
+      <div class="controls-row">
+        <div class="control-group filter-group">
+          <label for="filter-field">فیلتر بر اساس</label>
+          <select id="filter-field">
+            <option value="">هیچ کدام</option>
+            <option value="student_id">شماره دانشجویی</option>
+            <option value="name">نام</option>
+            <option value="last_name">نام خانوادگی</option>
+            <option value="major">رشته تحصیلی</option>
+            <option value="degree">مقطع تحصیلی</option>
+            <option value="phone_number">شماره تماس</option>
+          </select>
+          <input id="filter-value" type="search" placeholder="مقدار را بنویسید...">
+          <button type="button" id="clear-filter" class="text-btn">پاک کردن فیلتر</button>
+        </div>
+
+        <div class="control-group sort-group">
+          <label for="sort-field">مرتب‌سازی</label>
+          <select id="sort-field">
+            <option value="id">شناسه (جدیدترین)</option>
+            <option value="student_id">شماره دانشجویی</option>
+            <option value="name">نام</option>
+            <option value="major">رشته تحصیلی</option>
+          </select>
+          <select id="sort-order">
+            <option value="ASC">صعودی</option>
+            <option value="DESC">نزولی</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap loading" id="table-wrap">
         <table>
           <thead>
             <tr>
@@ -74,37 +107,24 @@
               <th>عملیات</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>۱</td><td>1405123</td><td>علی محمدی</td><td>مهندسی کامپیوتر</td><td>کارشناسی</td><td>09123456789</td>
-              <td class="actions"><button class="edit" aria-label="ویرایش">✎</button><button class="delete" aria-label="حذف">▣</button></td>
-            </tr>
-            <tr>
-              <td>۲</td><td>1405234</td><td>سارا احمدی</td><td>مهندسی برق</td><td>کارشناسی</td><td>09122334455</td>
-              <td class="actions"><button class="edit" aria-label="ویرایش">✎</button><button class="delete" aria-label="حذف">▣</button></td>
-            </tr>
-            <tr>
-              <td>۳</td><td>1405345</td><td>رضا کریمی</td><td>مهندسی مکانیک</td><td>کارشناسی</td><td>09331112233</td>
-              <td class="actions"><button class="edit" aria-label="ویرایش">✎</button><button class="delete" aria-label="حذف">▣</button></td>
-            </tr>
-            <tr>
-              <td>۴</td><td>1405456</td><td>مریم حسینی</td><td>مدیریت صنعتی</td><td>کارشناسی ارشد</td><td>09129876543</td>
-              <td class="actions"><button class="edit" aria-label="ویرایش">✎</button><button class="delete" aria-label="حذف">▣</button></td>
-            </tr>
-            <tr>
-              <td>۵</td><td>1405567</td><td>حامد رضایی</td><td>علوم کامپیوتر</td><td>کارشناسی</td><td>09218877665</td>
-              <td class="actions"><button class="edit" aria-label="ویرایش">✎</button><button class="delete" aria-label="حذف">▣</button></td>
-            </tr>
+          <tbody id="students-tbody">
           </tbody>
         </table>
+        <div id="table-loader" class="table-loader"><span class="spinner"></span> در حال بارگذاری اطلاعات...</div>
       </div>
 
       <div class="pagination">
-        <button type="button" disabled>قبلی</button>
-        <button type="button" class="current">۱</button>
-        <button type="button">بعدی</button>
+        <button type="button" id="prev-page" disabled>قبلی</button>
+        <span id="page-indicator">۱ از ۱</span>
+        <button type="button" id="next-page">بعدی</button>
       </div>
+
+      <div id="table-error" class="status-message error" hidden></div>
     </section>
+
+    <div id="toast-container" aria-live="polite"></div>
   </main>
+
+  <script src="app.js"></script>
 </body>
 </html>

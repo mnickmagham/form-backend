@@ -12,29 +12,25 @@ cp .env.example .env
 # edit .env with your own credentials / ports
 ```
 
-The Go server and Docker Compose both read `server/.env`, so keep them in sync.
+The Go server reads `server/.env` directly. For Docker Compose there's a separate root `.env.example` (copy to `.env` at the repo root) that overrides compose-only values like `WEB_PORT`, `DB_PASSWORD`, `DB_NAME`, and `DOMAIN`. `server/.env` is git-ignored — keep your local values out of version control.
 
 ## Run with Docker Compose
 
-From the `server` directory:
+From the repo root (root `docker-compose.yml` is the single compose file):
 
 ```bash
-cd server
-docker compose up --build
+docker compose up -d --build
 ```
 
-This starts MySQL (`db`) and the Go app (`app`). The app seeds the database from `../students_db.sql` on first start.
+This starts MySQL (`db`), the Go API (`api`), and the nginx frontend (`web`). The database seeds from `./students_db.sql` on first start.
 
-- API Base URL: http://localhost:8080  (from `SERVER_PORT` in `.env`)
-- MySQL: localhost:4656
+- UI + API proxy: http://localhost:8080  (override with `WEB_PORT`)
 - Swagger UI: http://localhost:8080/swagger/
-- Static test UI: http://localhost:8080/
-
-Stop with `docker compose down`.
+- Stop: `docker compose down` (add `-v` to delete the database volume)
 
 ## Run locally (2 commands)
 
-You need MySQL running on localhost:3306, then the Go server. Both read from `server/.env`.
+You need MySQL running on localhost:3306, then the Go server reads from `server/.env`.
 
 1. Start the database (MySQL), then load the seed:
 

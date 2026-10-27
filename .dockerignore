@@ -1,0 +1,10 @@
+.git
+.gitignore
+.codegraph
+.claude
+server
+students_db.sql
+CHANGELOG.md
+CLAUDE.md
+TASKLIST.md
+*.md
